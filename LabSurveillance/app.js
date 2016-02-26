@@ -40,6 +40,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+
+var useInterval = false;
+var interval = 5000;
  
 // array to hold the connections
 var openChannels = [];
@@ -50,8 +53,54 @@ app.ws('/echo', function(ws, req) {
       console.log("connected");
   })
   ws.on('message', function(msg) {
+      console.log(msg);
+        if (msg === "TakePicture") {
+            if (!useInterval) {
+                console.log("picture taken");
+                takePicture();                
+            }
+        }
+        if (msg === "StartInterval") {
+            useInterval = true;
+        }
+        if (msg === "StopInterval") {
+            useInterval = false;
+        }
         console.log("clients");
-        console.log(ws);
+        // console.log(ws);
+        // takePicture();
+        // var child = spawn("powershell.exe",["C:\\git\\aspc2016\\labsurveillance\\screenshot.ps1"]);
+        // child.stdout.on("data",function(data){
+        //     console.log("Powershell Data: " + data);
+        // });
+        // console.log("test");
+        // child.stderr.on("data",function(data){
+        //     console.log("Powershell Errors: " + data);
+        // });
+        // child.on("exit",function(){
+        //     aWss.clients.forEach(function (client) {
+        //        client.send('hello');
+        //     });
+        //     console.log("Powershell Script finished");
+        // });
+        // child.stdin.end(); //end input
+
+    console.log(msg);
+  });
+  console.log('socket', req.testing);
+});
+var aWss = expressWs.getWss('/echo');
+
+setTimeout(handleInterval, interval);
+
+function handleInterval() {
+    if (useInterval) {
+        takePicture();
+    }    
+    setTimeout(handleInterval, interval);
+}
+
+function takePicture() {
         var child = spawn("powershell.exe",["C:\\git\\aspc2016\\labsurveillance\\screenshot.ps1"]);
         child.stdout.on("data",function(data){
             console.log("Powershell Data: " + data);
@@ -61,27 +110,14 @@ app.ws('/echo', function(ws, req) {
             console.log("Powershell Errors: " + data);
         });
         child.on("exit",function(){
-            //    openChannels.forEach(function(index, item) {
-            //   if (item !== ws) { // make sure we're not sending to ourselves
-                // console.log(openChannels.length);
-                // if (item && item.send) {
-                    // item.send("Picture updated ");
-                // }
-            //   }
-            //    });
-            // ws.send("Picture updated");
             aWss.clients.forEach(function (client) {
                client.send('hello');
             });
             console.log("Powershell Script finished");
         });
         child.stdin.end(); //end input
+}
 
-    console.log(msg);
-  });
-  console.log('socket', req.testing);
-});
-var aWss = expressWs.getWss('/echo');
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

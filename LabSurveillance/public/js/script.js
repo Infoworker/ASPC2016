@@ -6,8 +6,15 @@
     output = document.getElementById("output");
     testWebSocket();
     $("#TakeImage").on("click", function() {
-        doSend("Take Picture");
+        doSend("TakePicture");
     })
+    $("#StartButton").on("click", function() {
+        doSend("StartInterval");
+    })
+    $("#StopButton").on("click", function() {
+        doSend("StopInterval");
+    })
+
   }
 
   function testWebSocket()
