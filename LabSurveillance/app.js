@@ -56,6 +56,7 @@ app.ws('/echo', function(ws, req) {
         child.stdout.on("data",function(data){
             console.log("Powershell Data: " + data);
         });
+        console.log("test");
         child.stderr.on("data",function(data){
             console.log("Powershell Errors: " + data);
         });
